@@ -3,7 +3,7 @@
     {
       "src": "index.html",
       "use": "@vercel/static-build",
-      }
+     
     }
   ],
   "rewrites": [
