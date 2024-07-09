@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { auth, db } from '../../firebase.config'; // Adjust the path to your Firebase configuration
 import { getDoc, doc } from "firebase/firestore";
+import Navbar from '../Navbar';
 
 const Profile = () => {
   const [profileData, setProfileData] = useState({});
