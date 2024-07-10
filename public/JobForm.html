@@ -113,6 +113,14 @@
 
             console.log("User is authenticated");
 
+            // Ensure the user is an organization
+            var userDoc = await db.collection('users').doc(user.uid).get();
+            if (!userDoc.exists || userDoc.data().type !== 'org') {
+                alert('Only organizations can post jobs.');
+                console.log('User is not an organization');
+                return;
+            }
+
             // Retrieve form values
             var company = document.getElementById('first_name').value;
             var title = document.getElementById('last_name').value;
@@ -151,7 +159,8 @@
                     postedOn: formattedDate,
                     skills: skillsArray,
                     job_link: job_link, // Add job_link to Firestore
-                    moreData: moreData // Add moreData to Firestore
+                    moreData: moreData, // Add moreData to Firestore
+                    orgId: user.uid // Set the orgId to the current user's ID
                 });
                 console.log("Document written with ID: ", docRef.id);
                 // Optionally, clear the form after successful submission
