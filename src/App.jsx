@@ -7,9 +7,11 @@ import JobCard from "./components/JobCard";
 import ChatList from "./components/ChatList";
 import Chat from "./components/Chat";
 import dayjs from 'dayjs';
+
 import Profile from "./components/Profile"; // Import the Profile component
 import { collection, query, orderBy, where, getDocs } from "firebase/firestore";
 import { db, auth } from "./firebase.config";
+import Applications from './components/Applications';
 
 function App() {
   const [jobs, setJobs] = useState([]);
@@ -31,6 +33,7 @@ function App() {
           ...job.data(),
           id: job.id,
           postedOn: job.data().postedOn.toDate(),
+          orgId: job.data().orgId // Ensure orgId is included
         });
       });
       setJobs(tempJobs);
@@ -46,12 +49,14 @@ function App() {
       setCustomSearch(true);
       const tempJobs = [];
       const jobsRef = collection(db, "jobs");
-      const queries = [orderBy("postedOn", "desc")];
-
-      if (jobCriteria.type) queries.push(where("type", "==", jobCriteria.type));
-      if (jobCriteria.location) queries.push(where("location", "==", jobCriteria.location));
-
-      const q = query(jobsRef, ...queries);
+      const q = query(
+        jobsRef,
+        where("type", "==", jobCriteria.type),
+        where("title", "==", jobCriteria.title),
+        where("experience", "==", jobCriteria.experience),
+        where("location", "==", jobCriteria.location),
+        orderBy("postedOn", "desc")
+      );
       const req = await getDocs(q);
 
       req.forEach((job) => {
@@ -59,6 +64,7 @@ function App() {
           ...job.data(),
           id: job.id,
           postedOn: job.data().postedOn.toDate(),
+          orgId: job.data().orgId // Ensure orgId is included
         });
       });
       setJobs(tempJobs);
@@ -76,7 +82,7 @@ function App() {
         fetchJobs();
       } else {
         setIsAuthenticated(false);
-        window.location.href = '../login.html';
+        window.location.href = '../public/login.html';
       }
       setLoading(false);
     });
@@ -106,6 +112,7 @@ function App() {
         <Route path="/chats" element={<ChatList />} />
         <Route path="/chats/:orgId" element={<Chat />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/applications" element={<Applications />} />
       </Routes>
       {selectedJob && <JobDetail job={selectedJob} onClose={handleClose} />}
     </Router>
@@ -148,7 +155,6 @@ const JobDetail = ({ job, onClose }) => (
       <p><strong>Posted On:</strong> {dayjs(job.postedOn).format('MMMM D, YYYY')}</p>
       <p><strong>Skills:</strong> {job.skills.join(', ')}</p>
       <p><strong>Job Link:</strong> <a href={job.job_link} target="_blank" rel="noopener noreferrer">{job.job_link}</a></p>
-      <p><strong>More Data:</strong> {job.moreData}</p>
     </div>
   </div>
 );
