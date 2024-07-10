@@ -1,3 +1,5 @@
+// src/components/Navbar.jsx
+
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { auth, db } from '../../firebase.config'; // Adjust the path to your Firebase configuration
@@ -52,6 +54,12 @@ function Navbar() {
           className='bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded mr-4'
         >
           My Profile
+        </Link>
+        <Link 
+          to="/applications" 
+          className='bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded mr-4'
+        >
+          Applications
         </Link>
         <Link 
           to="/chats" 
