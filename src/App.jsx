@@ -82,7 +82,7 @@ function App() {
         fetchJobs();
       } else {
         setIsAuthenticated(false);
-        window.location.href = '../public/login.html';
+        window.location.href = '../login.html';
       }
       setLoading(false);
     });
