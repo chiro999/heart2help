@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Application Form</title>
+    <link rel="stylesheet" href="FormStyle.css">
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <!-- Firebase Firestore SDK (non-modular version) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <!-- Firebase Authentication SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <!-- Day.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.10.7/dayjs.min.js"></script>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="/" id="heart2help-link">heart2help</a></li>
+            <li class="nav-right"><button id="logoutButton">Logout</button></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <div class="apply_box">
+            <h1>Post a volunteer/internship role</h1>
+
+            <form id="jobApplicationForm">
+                <div class="form_container">
+                    <div class="form_control">
+                        <label for="first_name">Organization name:</label>
+                        <input type="text" id="first_name" name="first_name" placeholder="Organization name" required>
+                    </div>
+                    <div class="form_control">
+                        <label for="last_name">Job Role:</label>
+                        <input type="text" id="last_name" name="last_name" placeholder="Enter Job Title..." required>
+                    </div>
+                    <div class="form_control">
+                        <label for="email">Experience/Clearance</label>
+                        <input type="text" id="email" name="email" placeholder="Enter key requirement" required>
+                    </div>
+                    <div class="form_control">
+                        <label for="job_role">Location</label>
+                        <select id="job_role" name="job_role" required>
+                            <option value="">Select job location</option>
+                            <option value="On-site">On-site</option>
+                            <option value="Remote">Remote</option>
+                            <option value="Hybrid">Hybrid</option>
+                        </select>
+                    </div>
+                    <div class="textarea_control">
+                        <label for="address">Text area for summary</label>
+                        <textarea id="address" name="address" rows="4" cols="50" placeholder="Enter summary..." required></textarea>
+                    </div>
+                    <div class="form_control">
+                        <label for="job_type">Job Type</label>
+                        <select id="job_type" name="job_type" required>
+                            <option value="Part Time">Part-time</option>
+                            <option value="Full Time">Full-time</option>
+                        </select>
+                    </div>
+                    <div class="form_control">
+                        <label for="date">Date:</label>
+                        <input type="date" id="date" name="date" value="2024-01-01" required>
+                    </div>
+                    <div class="form_control">
+                        <label for="skills">Skills (Enter two skills separated by a comma):</label>
+                        <input type="text" id="skills" name="skills" placeholder="e.g., JavaScript, HTML" required>
+                    </div>
+                    <div class="form_control">
+                        <label for="job_link">Job Link</label>
+                        <textarea id="job_link" name="job_link" rows="1" cols="50" placeholder="Enter job application link..." required></textarea>
+                    </div>
+                    <div class="textarea_control">
+                        <label for="more_data">More Data</label>
+                        <textarea id="more_data" name="more_data" rows="4" cols="50" placeholder="Enter more data..." required></textarea>
+                    </div>
+                </div>
+                <div class="button_container">
+                    <button type="submit">Apply Now</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        // Your Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyC9eL7RoamdMovJUkZ5P5S-0pKqux7tc-8",
+            authDomain: "heart2help-eb7a9.firebaseapp.com",
+            projectId: "heart2help-eb7a9",
+            storageBucket: "heart2help-eb7a9.appspot.com",
+            messagingSenderId: "743382248734",
+            appId: "1:743382248734:web:73011e0b6b173c1e0aed0f"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        var db = firebase.firestore();
+
+        // Add event listener for form submission
+        document.getElementById('jobApplicationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            console.log("Form submission started");
+
+            // Ensure the user is authenticated
+            var user = firebase.auth().currentUser;
+            if (!user) {
+                alert('You must be logged in to submit the form.');
+                console.log('User not authenticated');
+                return;
+            }
+
+            console.log("User is authenticated");
+
+            // Retrieve form values
+            var company = document.getElementById('first_name').value;
+            var title = document.getElementById('last_name').value;
+            var experience = document.getElementById('email').value;
+            var location = document.getElementById('job_role').value;
+            var type = document.getElementById('address').value;
+            var jobType = document.getElementById('job_type').value;
+            var postedOn = document.getElementById('date').value;
+            var skillsInput = document.getElementById('skills').value;
+            var skillsArray = skillsInput.split(',').map(skill => skill.trim());
+            var job_link = document.getElementById('job_link').value;
+            var moreData = document.getElementById('more_data').value; // Retrieve value of the new field
+
+            console.log("Form values retrieved");
+
+            // Validate skills input
+            if (skillsArray.length !== 2) {
+                alert('Please enter exactly two skills separated by a comma.');
+                return;
+            }
+
+            // Format the date using Day.js
+            var formattedDate = dayjs(postedOn).toDate();
+
+            console.log("Form values validated and date formatted");
+
+            // Attempt to add data to Firestore
+            try {
+                var docRef = await db.collection('jobs').add({
+                    company: company,
+                    title: title,
+                    experience: experience,
+                    location: location,
+                    type: type,
+                    jobType: jobType,
+                    postedOn: formattedDate,
+                    skills: skillsArray,
+                    job_link: job_link, // Add job_link to Firestore
+                    moreData: moreData // Add moreData to Firestore
+                });
+                console.log("Document written with ID: ", docRef.id);
+                // Optionally, clear the form after successful submission
+                document.getElementById('jobApplicationForm').reset();
+            } catch (error) {
+                console.error("Error adding document: ", error);
+            }
+        });
+
+        // Logout button event listener
+        document.getElementById('logoutButton').addEventListener('click', function() {
+            firebase.auth().signOut().then(() => {
+                console.log('User logged out');
+                alert('You have been signed out.');
+                // Redirect to the login page after logout
+                window.location.href = '/login'; // Change this to the actual login page URL
+            }).catch((error) => {
+                console.error('Error logging out: ', error);
+            });
+        });
+    </script>
+</body>
+</html>
